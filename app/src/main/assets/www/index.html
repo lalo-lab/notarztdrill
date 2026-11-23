@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14213d">
+<title>NotarztDrill</title>
+<style>
+:root{
+  --bg:#f3f5f8; --card:#ffffff; --ink:#15202b; --muted:#5d6b7a; --line:#dfe4ea;
+  --brand:#14213d; --accent:#e63946;
+  --ok:#2e9e5b; --ok-bg:#e6f5ec; --bad:#d64545; --bad-bg:#fbeaea; --gray:#c7cdd4;
+  --radius:16px;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0f141a; --card:#18202a; --ink:#e8edf2; --muted:#93a1b0; --line:#2a3542;
+    --brand:#0b1424; --ok-bg:#16301f; --bad-bg:#3a1a1a; --gray:#3b4654; }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button{font:inherit;cursor:pointer}
+header{background:var(--brand);color:#fff;padding:calc(env(safe-area-inset-top) + 10px) 16px 12px;position:sticky;top:0;z-index:5}
+.top{display:flex;align-items:center;gap:10px}
+.logo{font-weight:800;letter-spacing:.2px;font-size:18px;flex:1}
+.logo span{color:#ff6b74}
+.iconbtn{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:10px;padding:6px 12px;font-size:14px}
+.bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--gray);margin-top:10px}
+.bar i{display:block;height:100%;transition:width .35s ease}
+.bar .g{background:var(--ok)} .bar .r{background:var(--bad)} .bar .n{background:#8c96a3}
+.legend{display:flex;gap:14px;font-size:13px;margin-top:6px;color:#d6dde6}
+.legend b{font-weight:700;color:#fff}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0}
+main{max-width:680px;margin:0 auto;padding:16px 14px calc(env(safe-area-inset-bottom) + 28px)}
+.card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:0 1px 2px rgba(0,0,0,.06);border:1px solid var(--line)}
+.stack>*+*{margin-top:14px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.chip.new{color:#2563eb;border-color:#bcd0f7}
+.chip.rep{color:#b45309;border-color:#f1d4a8}
+.question{font-size:20px;font-weight:650;line-height:1.35;margin:12px 0 4px}
+textarea{width:100%;min-height:96px;resize:vertical;border:2px solid var(--line);border-radius:12px;padding:12px 14px;
+  font:inherit;font-size:17px;background:var(--card);color:var(--ink);outline:none}
+textarea:focus{border-color:#4f7bd9}
+.row{display:flex;gap:10px}
+.btn{flex:1;border:0;border-radius:12px;padding:14px 16px;font-weight:700;font-size:16px}
+.btn.primary{background:var(--brand);color:#fff}
+@media (prefers-color-scheme: dark){ .btn.primary{background:#3a6fd8} }
+.btn.ghost{background:transparent;border:2px solid var(--line);color:var(--ink)}
+.btn.ok{background:var(--ok);color:#fff}
+.btn.small{flex:none;padding:10px 14px;font-size:14px}
+.verdict{border-radius:14px;padding:14px 16px;font-weight:800;font-size:20px;display:flex;align-items:center;gap:10px}
+.verdict.ok{background:var(--ok-bg);color:var(--ok)} .verdict.bad{background:var(--bad-bg);color:var(--bad)}
+.verdict small{font-weight:600;font-size:13px;color:var(--muted);margin-left:auto}
+.keys{display:flex;flex-wrap:wrap;gap:6px}
+.key{font-size:13.5px;padding:4px 10px;border-radius:8px}
+.key.hit{background:var(--ok-bg);color:var(--ok)} .key.miss{background:var(--bad-bg);color:var(--bad);font-weight:700}
+.label{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:700;margin-bottom:6px}
+.solution{font-size:16.5px;line-height:1.5}
+.yours{color:var(--muted);font-size:15px;white-space:pre-wrap;word-break:break-word}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;padding:6px 0;font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font-size:24px}
+.stat span{font-size:12.5px;color:var(--muted)}
+.topic{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.topic:first-child{border-top:0}
+.topic .name{flex:0 0 42%;font-size:14.5px}
+.topic .bar{flex:1;margin:0;height:9px}
+.topic .num{flex:0 0 52px;text-align:right;font-size:13px;color:var(--muted)}
+.hero{font-size:15px;color:var(--muted)}
+.big{font-size:18px;padding:18px;width:100%;display:block}
+.menu button{display:block;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:14px 2px;color:var(--ink)}
+.menu button:first-child{border-top:0}
+.danger{color:var(--bad)!important}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);transform:translateX(-50%);background:#222c38;color:#fff;
+  padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:20}
+.toast.show{opacity:1}
+.hidden{display:none!important}
+.muted{color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <button class="iconbtn hidden" id="btnHome">‹ Start</button>
+    <div class="logo">Notarzt<span>Drill</span></div>
+    <button class="iconbtn" id="btnMenu">☰</button>
+  </div>
+  <div class="bar" id="mainBar"><i class="g"></i><i class="r"></i></div>
+  <div class="legend" id="mainLegend"></div>
+</header>
+
+<main>
+  <!-- Start -->
+  <section id="vHome" class="stack">
+    <div class="stats">
+      <div class="stat"><b id="sDue">0</b><span>fällig</span></div>
+      <div class="stat"><b id="sNew">0</b><span>neu</span></div>
+      <div class="stat"><b id="sOk">0</b><span>richtig</span></div>
+    </div>
+    <button class="btn primary big" id="btnStart">Lernen</button>
+    <p class="hero" id="heroText"></p>
+    <div class="card">
+      <div class="label">Themen</div>
+      <div id="topics"></div>
+    </div>
+  </section>
+
+  <!-- Abfrage -->
+  <section id="vQuiz" class="stack hidden">
+    <div class="card">
+      <div class="chips"><span class="chip" id="qTopic"></span><span class="chip" id="qKind"></span></div>
+      <div class="question" id="qText"></div>
+    </div>
+
+    <div id="askBox" class="stack">
+      <textarea id="answer" placeholder="Deine Antwort …" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="send"></textarea>
+      <div class="row">
+        <button class="btn ghost" id="btnSkip">Weiß nicht</button>
+        <button class="btn primary" id="btnCheck">Prüfen</button>
+      </div>
+      <div class="muted">Enter = Prüfen · Umschalt+Enter = neue Zeile</div>
+    </div>
+
+    <div id="resultBox" class="stack hidden">
+      <div class="verdict" id="verdict"></div>
+      <div class="card stack">
+        <div id="yoursWrap"><div class="label">Deine Antwort</div><div class="yours" id="yours"></div></div>
+        <div id="keysWrap"><div class="label">Schlüsselbegriffe</div><div class="keys" id="keys"></div></div>
+        <div><div class="label">Lösung</div><div class="solution" id="solution"></div></div>
+      </div>
+      <div class="row">
+        <button class="btn ghost small" id="btnOverride"></button>
+        <button class="btn primary" id="btnNext">Weiter</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Menü -->
+  <section id="vMenu" class="stack hidden">
+    <div class="card menu">
+      <button id="mExport">Fortschritt sichern (kopieren)</button>
+      <button id="mImport">Fortschritt wiederherstellen</button>
+      <button id="mReset" class="danger">Fortschritt zurücksetzen</button>
+    </div>
+    <div class="card stack hidden" id="ioBox">
+      <div class="label" id="ioLabel"></div>
+      <textarea id="ioText" spellcheck="false"></textarea>
+      <div class="row"><button class="btn primary" id="ioBtn"></button></div>
+    </div>
+    <div class="card">
+      <div class="label">So funktioniert's</div>
+      <p class="muted" style="margin:0">Offene Fragen mit sofortiger Bewertung. Gezählt werden die Schlüsselbegriffe – Reihenfolge, Groß-/Kleinschreibung, kleine Tippfehler und Schreibweisen (0,5/0.5, µg/ug/mcg, i.v./iv) sind egal. Falsch beantwortete Fragen kommen nach ein paar Fragen wieder und am nächsten Tag; richtige in wachsenden Abständen (1 → 3 → 7 → 16 → 35 → 80 Tage).<br><br>Inhalt: Lernskript ZWB Notfallmedizin ÄKWL Münster. Dosen immer mit der SOP deines Rettungsdienstbereichs abgleichen.</p>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script src="questions.js"></script>
+<script src="grader.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
