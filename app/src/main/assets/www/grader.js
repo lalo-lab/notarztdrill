@@ -40,7 +40,40 @@
     s = s.replace(/(\d)\.(?!\d)/g, "$1 ");
     s = s.replace(/[^a-z0-9.\- ]/g, " ");
     s = s.replace(/(^|[^\d])\.|\.(?!\d)/g, "$1 ");
-    return s.split(/\s+/).filter(Boolean).map(canonNum);
+    return s.split(/\s+/).filter(Boolean).map(function (t) { return canonNum(UNIT[t] || t); });
+  }
+
+  // Einheiten-Synonyme auf Token-Ebene (greift auch bei "500mcg", "10mikrog")
+  var UNIT = {
+    mcg: "ug", mikrog: "ug", mikrogr: "ug", microg: "ug", microgr: "ug", mikrogramm: "ug", microgramm: "ug",
+    micrograms: "ug", microgram: "ug", ugr: "ug", gamma: "ug",
+    mgr: "mg", milligr: "mg", milligramm: "mg",
+    gr: "g", gramm: "g",
+    mls: "ml", millil: "ml", milliliter: "ml",
+    joule: "j", min: "min", mins: "min", minute: "min", minuten: "min", sek: "s", sekunde: "s", sekunden: "s", sec: "s",
+    std: "h", stunde: "h", stunden: "h", hrs: "h"
+  };
+
+  // Varianten mit umgerechneten Einheiten: 0.5 mg <-> 500 ug, 1 g <-> 1000 mg
+  var CONV = { mg: [["ug", 1000], ["g", 0.001]], ug: [["mg", 0.001]], g: [["mg", 1000]] };
+  function fmt(x) { return String(parseFloat(x.toPrecision(12))); }
+  function convertNum(tok, f) {
+    if (!/^\d+(\.\d+)?(-\d+(\.\d+)?)?$/.test(tok)) return null;
+    return tok.split("-").map(function (p) { return fmt(parseFloat(p) * f); }).join("-");
+  }
+  function variants(toks) {
+    var out = [toks];
+    for (var i = 0; i + 1 < toks.length; i++) {
+      var conv = CONV[toks[i + 1]];
+      if (!conv) continue;
+      conv.forEach(function (c) {
+        var n = convertNum(toks[i], c[1]);
+        if (n === null) return;
+        var v = toks.slice(); v[i] = n; v[i + 1] = c[0];
+        out.push(v);
+      });
+    }
+    return out;
   }
 
   function lev(a, b) {
@@ -98,7 +131,9 @@
     var toks = normalize(answer);
     var compact = toks.join("");
     var res = q.k.map(function (group) {
-      var hit = group.some(function (alt) { return altMatch(normKey(alt), toks, compact); });
+      var hit = group.some(function (alt) {
+        return variants(normKey(alt)).some(function (v) { return altMatch(v, toks, compact); });
+      });
       return { label: group[0], hit: hit };
     });
     var hits = res.filter(function (r) { return r.hit; }).length;

@@ -40,6 +40,18 @@ const cases=[
  ['Welches Schema wendest du bei Ankunft','4S',true],
  ['Reanimation Kind: Adrenalin','10 µg/kg, max 1 mg, alle 3-5 min',true],
  ['Reanimation Kind: Adrenalin','0,01 mg/kg max 1mg alle 3 bis 5 min',true],
+ ['Reanimation Kind: Adrenalin','10mcg/kg max 1mg alle 3-5min',true],
+ ['Reanimation Kind: Adrenalin','10 mcg/kg, max. 1000mcg, 3–5 Minuten',true],
+ ['Bradykardie: Adrenalin','2-10mcg/min',true],
+ ['Bradykardie: Adrenalin','2-10 Mikrogramm pro Minute',true],
+ ['Bradykardie: Adrenalin','2-10 mg/min',false],
+ ['Anaphylaxie Erwachsene: Adrenalin –','500mcg im, Wdh nach 5min',true],
+ ['Bradykardie: Atropin','500mcg bis max. 3mg',true],
+ ['Analgesie Kind: Fentanyl','1,5-2mcg/kg',true],
+ ['Kind 12 kg: Atropin','240mcg',true],
+ ['Tranexamsäure bei Blutung','1000mg iv über 10 min innerhalb von 3h',true],
+ ['Reanimation Erwachsene: Adrenalin','1000mcg iv alle 3-5 min',true],
+ ['Reanimation Erwachsene: Adrenalin','1 µg iv alle 3-5 min',false],
  ['ACS: Nitroglycerin','0,4-0,8 mg sublingual, RR > 90, kein Viagra, kein Rechtsherzinfarkt',true],
 ];
 for(const [s,a,exp] of cases){const q=by(s); if(!q){console.log('NOQ',s);continue;} const r=G.grade(q,a); if(r.ok!==exp) { caseFail++; } if(r.ok!==exp) console.log('CASE-FAIL',s,'|',a,'->',r.ok,r.groups);}

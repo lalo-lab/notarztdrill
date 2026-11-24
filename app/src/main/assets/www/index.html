@@ -26,9 +26,32 @@ header{background:var(--brand);color:#fff;padding:calc(env(safe-area-inset-top) 
 .logo span{color:#ff6b74}
 .iconbtn{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:10px;padding:6px 12px;font-size:14px}
 .bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--gray);margin-top:10px}
+.barwrap{position:relative;margin-top:16px;margin-right:2px}
+.barwrap .bar{margin-top:0}
+.rider{position:absolute;top:-15px;width:42px;height:42px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);transition:left .5s ease;background:#fff;overflow:hidden;cursor:pointer}
+.rider svg,.avbig svg,.lvlup svg{display:block;width:100%;height:100%}
+.qhead{display:flex;gap:14px;align-items:flex-start}
+.qimg{flex:0 0 84px;width:84px;height:84px}
+.qimg svg{width:100%;height:100%;display:block}
+.qbody{flex:1;min-width:0}
+.avcard{display:flex;gap:14px;align-items:center}
+.avbig{flex:0 0 96px;width:96px;height:96px;border-radius:50%;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.lvname{font-size:19px;font-weight:800}
+.lvtxt{font-size:14px;color:var(--muted);margin:2px 0 8px}
+.lvbar{height:8px;border-radius:4px;background:var(--gray);overflow:hidden}
+.lvbar i{display:block;height:100%;background:linear-gradient(90deg,#ffc300,#f77f00)}
+.lvnext{font-size:12.5px;color:var(--muted);margin-top:5px}
+.lvlup{position:fixed;inset:0;background:rgba(10,16,28,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:30;color:#fff;text-align:center;padding:24px;animation:fade .25s}
+.lvlup .pic{width:190px;height:190px;border-radius:50%;overflow:hidden;animation:pop .6s cubic-bezier(.2,1.6,.4,1);box-shadow:0 0 0 6px #ffd60a,0 0 40px #ffd60a}
+.lvlup h2{margin:22px 0 4px;font-size:15px;letter-spacing:2px;text-transform:uppercase;color:#ffd60a}
+.lvlup h3{margin:0 0 6px;font-size:28px}
+.lvlup p{margin:0;color:#c9d2dd}
+@keyframes pop{from{transform:scale(.3) rotate(-20deg)}to{transform:scale(1) rotate(0)}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@media (max-width:360px){.qimg{flex-basis:64px;width:64px;height:64px}}
 .bar i{display:block;height:100%;transition:width .35s ease}
 .bar .g{background:var(--ok)} .bar .r{background:var(--bad)} .bar .n{background:#8c96a3}
-.legend{display:flex;gap:14px;font-size:13px;margin-top:6px;color:#d6dde6}
+.legend{display:flex;gap:14px;font-size:13px;margin-top:17px;color:#d6dde6}
 .legend b{font-weight:700;color:#fff}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0}
 main{max-width:680px;margin:0 auto;padding:16px 14px calc(env(safe-area-inset-bottom) + 28px)}
@@ -38,7 +61,7 @@ main{max-width:680px;margin:0 auto;padding:16px 14px calc(env(safe-area-inset-bo
 .chip{font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--bg);color:var(--muted);border:1px solid var(--line)}
 .chip.new{color:#2563eb;border-color:#bcd0f7}
 .chip.rep{color:#b45309;border-color:#f1d4a8}
-.question{font-size:20px;font-weight:650;line-height:1.35;margin:12px 0 4px}
+.question{font-size:19px;font-weight:650;line-height:1.35;margin:10px 0 2px}
 textarea{width:100%;min-height:96px;resize:vertical;border:2px solid var(--line);border-radius:12px;padding:12px 14px;
   font:inherit;font-size:17px;background:var(--card);color:var(--ink);outline:none}
 textarea:focus{border-color:#4f7bd9}
@@ -87,7 +110,7 @@ textarea:focus{border-color:#4f7bd9}
     <div class="logo">Notarzt<span>Drill</span></div>
     <button class="iconbtn" id="btnMenu">☰</button>
   </div>
-  <div class="bar" id="mainBar"><i class="g"></i><i class="r"></i></div>
+  <div class="barwrap"><div class="bar" id="mainBar"><i class="g"></i><i class="r"></i></div><div class="rider" id="rider"></div></div>
   <div class="legend" id="mainLegend"></div>
 </header>
 
@@ -99,6 +122,15 @@ textarea:focus{border-color:#4f7bd9}
       <div class="stat"><b id="sNew">0</b><span>neu</span></div>
       <div class="stat"><b id="sOk">0</b><span>richtig</span></div>
     </div>
+    <div class="card avcard">
+      <div class="avbig" id="avBig"></div>
+      <div style="flex:1;min-width:0">
+        <div class="lvname" id="lvName"></div>
+        <div class="lvtxt" id="lvTxt"></div>
+        <div class="lvbar"><i id="lvBar"></i></div>
+        <div class="lvnext" id="lvNext"></div>
+      </div>
+    </div>
     <button class="btn primary big" id="btnStart">Lernen</button>
     <p class="hero" id="heroText"></p>
     <div class="card">
@@ -109,9 +141,12 @@ textarea:focus{border-color:#4f7bd9}
 
   <!-- Abfrage -->
   <section id="vQuiz" class="stack hidden">
-    <div class="card">
-      <div class="chips"><span class="chip" id="qTopic"></span><span class="chip" id="qKind"></span></div>
-      <div class="question" id="qText"></div>
+    <div class="card qhead">
+      <div class="qimg" id="qImg"></div>
+      <div class="qbody">
+        <div class="chips"><span class="chip" id="qTopic"></span><span class="chip" id="qKind"></span></div>
+        <div class="question" id="qText"></div>
+      </div>
     </div>
 
     <div id="askBox" class="stack">
@@ -156,9 +191,12 @@ textarea:focus{border-color:#4f7bd9}
   </section>
 </main>
 <div class="toast" id="toast"></div>
+<div class="lvlup hidden" id="lvlUp"><div class="pic" id="lvlPic"></div><h2>Level-up</h2><h3 id="lvlName"></h3><p id="lvlTxt"></p><p style="margin-top:18px;font-size:13px;opacity:.7">Tippen zum Weiterlernen</p></div>
 
 <script src="questions.js"></script>
 <script src="grader.js"></script>
+<script src="icons.js"></script>
+<script src="avatar.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

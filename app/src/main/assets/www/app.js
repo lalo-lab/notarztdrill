@@ -110,9 +110,28 @@
     parts[0].style.width = (100 * c.g / c.total) + "%";
     parts[1].style.width = (100 * c.r / c.total) + "%";
   }
+  function greenPct(c) { return c.total ? 100 * c.g / c.total : 0; }
+  var avatarLevel = null;
+  function renderAvatar(c) {
+    var pct = greenPct(c);
+    var lv = Avatar.levelFor(pct);
+    var r = $("rider");
+    if (r.getAttribute("data-lv") !== String(lv)) { r.innerHTML = Avatar.svg(lv); r.setAttribute("data-lv", lv); }
+    r.style.left = "calc(" + pct.toFixed(2) + "% - " + (pct * 0.42).toFixed(2) + "px)";
+    if (avatarLevel !== null && lv > avatarLevel) levelUp(lv);
+    avatarLevel = lv;
+  }
+  function levelUp(lv) {
+    var L = Avatar.LEVELS[lv];
+    $("lvlPic").innerHTML = Avatar.svg(lv);
+    $("lvlName").textContent = L.name;
+    $("lvlTxt").textContent = L.txt;
+    $("lvlUp").classList.remove("hidden");
+  }
   function renderHeader() {
     var c = counts();
     paintBar($("mainBar"), c);
+    renderAvatar(c);
     $("mainLegend").innerHTML =
       '<span><i class="dot" style="background:var(--ok)"></i><b>' + c.g + '</b> richtig</span>' +
       '<span><i class="dot" style="background:var(--bad)"></i><b>' + c.r + '</b> falsch</span>' +
@@ -137,6 +156,18 @@
     $("sOk").textContent = c.g;
     var started = c.g + c.r > 0;
     $("btnStart").textContent = started ? "Weiter lernen" : "Lernen";
+    var pct = greenPct(c), lv = Avatar.levelFor(pct), L = Avatar.LEVELS[lv], N = Avatar.LEVELS[lv + 1];
+    $("avBig").innerHTML = Avatar.svg(lv);
+    $("lvName").textContent = "Level " + (lv + 1) + " · " + L.name;
+    $("lvTxt").textContent = L.txt;
+    if (N) {
+      var need = Math.ceil(N.min / 100 * c.total) - c.g;
+      $("lvBar").style.width = Math.max(0, Math.min(100, 100 * (pct - L.min) / (N.min - L.min))) + "%";
+      $("lvNext").textContent = "Noch " + need + " richtige Antwort" + (need === 1 ? "" : "en") + " bis „" + N.name + "“";
+    } else {
+      $("lvBar").style.width = "100%";
+      $("lvNext").textContent = "Höchstes Level erreicht – jetzt nur noch halten.";
+    }
     var t;
     if (dueTotal) t = dueTotal + " Wiederholung" + (dueTotal === 1 ? "" : "en") + " fällig – die kommen zuerst, danach neue Fragen.";
     else if (c.n) t = "Keine Wiederholung fällig. Weiter mit neuen Fragen (" + c.n + " offen).";
@@ -168,6 +199,7 @@
     kind.className = "chip " + (cur.kind === "new" ? "new" : "rep");
     kind.textContent = cur.kind === "new" ? "Neu" : (cur.kind === "early" ? "Vorgezogen" : "Wiederholung");
     $("qText").textContent = q.q;
+    $("qImg").innerHTML = window.iconSVG(q.i, q.kid);
     $("answer").value = "";
     $("askBox").classList.remove("hidden");
     $("resultBox").classList.add("hidden");
@@ -305,10 +337,18 @@
     if ((e.key === "Enter" || e.keyCode === 13) && !e.shiftKey) { e.preventDefault(); e.stopPropagation(); check(false); }
   });
   document.addEventListener("keydown", function (e) {
+    if (!$("lvlUp").classList.contains("hidden") && (e.key === "Enter" || e.keyCode === 13 || e.key === "Escape")) {
+      e.preventDefault(); $("lvlUp").classList.add("hidden"); return;
+    }
     if (phase === "result" && (e.key === "Enter" || e.keyCode === 13) && e.target !== $("answer") && e.target !== $("ioText") && location.hash === "#quiz") {
       e.preventDefault(); nextQuestion();
     }
   });
+  $("lvlUp").onclick = function () { $("lvlUp").classList.add("hidden"); };
+  $("rider").onclick = function () {
+    var lv = Avatar.levelFor(greenPct(counts()));
+    toast("Level " + (lv + 1) + ": " + Avatar.LEVELS[lv].name);
+  };
   $("mExport").onclick = function () { openIO("export"); };
   $("mImport").onclick = function () { openIO("import"); };
   $("ioBtn").onclick = ioAction;

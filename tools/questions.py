@@ -453,6 +453,88 @@ Q(L, "Klinik öffnet trotz vital bedrohtem Patienten nicht: Was tust du?", "Du b
   "Garant;Polizei|Amtshilfe;dokument", 2)
 Q(L, "Kindeswohlgefährdung: Nach welchem Gesetz dürfen Ärzte das Jugendamt informieren?", "§ 4 KKG.", "KKG")
 
+
+# ───────── Piktogramm je Frage (nach dem, was die Frage nennt – nie nach der Antwort) ─────────
+import re as _re
+ICON_RULES = [
+    (r"PsychKG", "gavel"),
+    (r"Analgosedierung|Analgesie Erwachsene: Welche|Hypnotika|RSI im Schock", "syringe"),
+    (r"Noradrenalin", "noradrenalin"),
+    (r"Vasopressor", "gauge"),
+    (r"Intox", "intox"),
+    (r"Adrenalin", "adrenalin"),
+    (r"Amiodaron", "amiodaron"),
+    (r"Atropin", "atropin"),
+    (r"Isoprenalin", "heart"),
+    (r"Adenosin", "adenosin"),
+    (r"Rocuronium|Succinylcholin|Relax", "relax"),
+    (r"Esketamin|Ketamin", "ketamin"),
+    (r"Schmerztherapie beim Kind", "child"),
+    (r"Fentanyl|Morphin|Opioid|Analgesie", "opioid"),
+    (r"Propofol", "propofol"),
+    (r"Etomidat|Hypnotika", "etomidat"),
+    (r"Rocuronium|Succinylcholin|Relax", "relax"),
+    (r"Tranexam|Antifibrinolyt", "txa"),
+    (r"Heparin", "heparin"),
+    (r"Nitro", "nitro"),
+    (r"\bASS\b", "ass"),
+    (r"ACS", "stemi"),
+    (r"Glukose|Hypoglyk|G40", "glucose"),
+    (r"Lorazepam|Midazolam|Diazepam|Analgosedierung", "benzo"),
+    (r"Levetiracetam|Valproat|Status epilepticus|Krampf", "antiepi"),
+    (r"NIV", "mask"),
+    (r"Prednisolon|Dexamethason|Steroid", "steroid"),
+    (r"Salbutamol|Ipratropium|Reproterol|Asthma|COPD|Inhalativ", "inhal"),
+    (r"Dimetinden|Anaphylaxie", "bee"),
+    (r"Urapidil|Hypertensiv|Blutdruck|RR", "gauge"),
+    (r"Paracetamol|Ibuprofen|Fieber", "fever"),
+    (r"Kapnografie|CO₂|etCO", "capno"),
+    (r"STEMI|wandinfarkt|Ableitung", "stemi"),
+    (r"Defibrillation|schockbar|Schockbar|Energie|VF|Kammer", "defi"),
+    (r"Pacing|Bradykardie|Tachykardie|Asystolierisiko|Asthmatiker mit Luftnot|Normwerte", "heart"),
+    (r"ROSC", "heart"),
+    (r"Reanimation|Thoraxkompression|Rhythmusanalyse|reversiblen Ursachen|HITS|4 H|Leitlinien", "cpr"),
+    (r"GCS", "brain"),
+    (r"Präoxygenierung|apnoische", "o2"),
+    (r"Tubus|Intubation|Laryngoskop|Plan A|Plan B|Plan A/B/C|Atemweg|Narkose|Teambriefing|Tracheostoma|Laryngektom|SALAD|DOPES|[Bb]eatme", "airway"),
+    (r"mSTaRT", "triage"),
+    (r"Tourniquet|Blutung|X:", "tourniquet"),
+    (r"Becken", "pelvis"),
+    (r"Spannungspneu|Nadeldekompression|Minithorakotomie", "needle"),
+    (r"Hypotherm", "cold"),
+    (r"SHT|GCS|Bewusstsein|WASB|D beim Trauma|BE-FAST|Schlaganfall", "brain"),
+    (r"HWS|NEXUS|Stiffneck", "spine"),
+    (r"Faustformel|Gewicht", "scale"),
+    (r"Säugling", "baby"),
+    (r"Krupp|Epiglott|Stridor|Westley|Fremdkörper|Beurteilungsdreieck|Kinder allgemein|Kind", "child"),
+    (r"qSOFA|Sepsis", "bacteria"),
+    (r"CRB|Pneumonie", "lungs"),
+    (r"SPIKES|ISBAR|Übergabe|Nachrichten|Nachbesprechung", "talk"),
+    (r"SAMPLER|OPQRST|[Aa]namnese", "clipboard"),
+    (r"4 S|Einsatzstelle|Gefahrenbereich", "shield"),
+    (r"RTH", "heli"),
+    (r"Rückmeldung|Funk|NEF-Fahrer|Leitstelle", "radio"),
+    (r"mSTaRT|Sichtung|SK |Kategorie|Blau und Schwarz|„ex“|Weste|gehfähig", "triage"),
+    (r"MANV", "radio"),
+    (r"Sofortrettung|Feuer", "fire"),
+    (r"Trias|E beim Trauma|Rettungsart|schonende|zeitkontrollierte|Anfahrt|Polytrauma|Zielklinik|STU|DCAP|xABCDE|Primary Survey|A beim Trauma|C beim Trauma|traumatische", "crash"),
+    (r"PsychKG|Gericht|Entmündigung", "gavel"),
+    (r"Todes|Tod", "candle"),
+    (r"Klinik|abgemeldet", "hospital"),
+    (r"Transportverweigerung|Unterschrift|Vorsorgevollmacht|Patientenverfügung|Bevollmächtigter", "sign"),
+    (r"Polizei", "police"),
+    (r"Rendezvous|Träger|Hilfsfrist|ÄLRD|Qualifikation|Notarztdienst|Rettungsdienstgesetz|Medizingeräte|Betäubungsmittel", "ambulance"),
+    (r"§|StGB|BGB|Rechtsgrundlage|Garanten|Schweigepflicht|KKG|Körperverletzung|Hilfeleistung|einwillig|Einwillig|Kernfrage|Straftat", "para"),
+]
+TOPIC_ICON = {"Abkürzungen": "abc", "Dosis Erwachsene": "syringe", "Dosis Kinder": "child", "Trauma": "crash",
+              "Reanimation": "cpr", "Atemweg & Narkose": "airway", "Pädiatrie": "child", "MANV": "triage",
+              "Organisation NRW": "ambulance", "Recht NRW": "para"}
+def icon_for(d):
+    for pat, ic in ICON_RULES:
+        if _re.search(pat, d["q"]):
+            return ic
+    return TOPIC_ICON[d["t"]]
+
 if __name__ == "__main__":
     # stabile IDs aus Fragetext
     def h(s):
@@ -463,6 +545,9 @@ if __name__ == "__main__":
     ids = set()
     for d in QS:
         d["id"] = h(d["t"] + "|" + d["q"])
+        d["i"] = icon_for(d)
+        if d["t"] in ("Dosis Kinder", "Pädiatrie") and d["i"] not in ("child", "baby"):
+            d["kid"] = 1
         assert d["id"] not in ids, d["q"]
         ids.add(d["id"])
         if "m" in d:
@@ -472,3 +557,6 @@ if __name__ == "__main__":
         f.write("window.QUESTIONS=" + json.dumps(QS, ensure_ascii=False) + ";\n")
     from collections import Counter
     print(len(QS), Counter(d["t"] for d in QS))
+    print(Counter(d["i"] for d in QS).most_common())
+    if '-v' in sys.argv:
+        for d in QS: print(d['i'].ljust(12), d['q'])
